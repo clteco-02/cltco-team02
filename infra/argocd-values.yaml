@@ -1,0 +1,9 @@
+configs:
+  cm:
+    application.instanceLabelKey: argocd.argoproj.io/instance
+
+server:
+  image:
+    repository: gen3registry02.azurecr.io/argocd
+    tag: latest
+

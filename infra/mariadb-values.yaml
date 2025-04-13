@@ -1,0 +1,15 @@
+image:
+  # registry: gen3registry02.azurecr.io
+  repository: mariadb
+  tag: latest
+
+auth:
+  rootPassword: mariadb123
+  database: mydb
+  username: user
+  password: pass123
+
+primary:
+  persistence:
+    enabled: true
+    size: 8Gi

@@ -1,0 +1,13 @@
+image:
+  registry: <acr-name>.azurecr.io
+  repository: redis-cluster
+  tag: latest
+
+cluster:
+  enabled: true
+  slaveCount: 2
+
+auth:
+  enabled: true
+  password: redis1234
+  

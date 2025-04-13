@@ -1,0 +1,9 @@
+image:
+  registry: gen3registry02.azurecr.io
+  repository: kafka
+  tag: latest
+
+replicaCount: 1
+
+zookeeper:
+  enabled: true
