@@ -1,4 +1,4 @@
-name: CI + CD (Docker Build & ACR Push + Helm Tag Update)
+name: CI + CD (Docker Build & ACR Push + Helm Tag Update with Docker Meta)
 
 on:
   push:
@@ -6,9 +6,15 @@ on:
       - main
     paths:
       - 'backend/**'
+      - 'backend-java/**'
       - 'frontend/**'
       - 'helms/**'
       - '.github/workflows/ci-cd.yml'
+
+env:
+  ACR_REGISTRY: gen3registry02.azurecr.io
+  BACKEND_CONTEXT: ./backend-java
+  FRONTEND_CONTEXT: ./frontend
 
 jobs:
   build-and-deploy:
@@ -16,42 +22,45 @@ jobs:
 
     steps:
       - name: 📦 Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: 🔐 Login to Azure Container Registry
         uses: azure/docker-login@v1
         with:
-          login-server: gen3registry02.azurecr.io
+          login-server: ${{ env.ACR_REGISTRY }}
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
+      - name: 🏷️ Docker meta for backend
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.ACR_REGISTRY }}/backend
+          tags: |
+            type=sha
+            type=ref,event=branch
+
+      - name: 🏷️ Docker meta for frontend
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.ACR_REGISTRY }}/frontend
+          tags: |
+            type=sha
+            type=ref,event=branch
+
       - name: 🐳 Build & Push Backend image
-        run: |
-          docker build -t gen3registry02.azurecr.io/backend:${{ github.sha }} ./backend
-          docker push gen3registry02.azurecr.io/backend:${{ github.sha }}
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.BACKEND_CONTEXT }}
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
 
       - name: 🐳 Build & Push Frontend image
-        run: |
-          docker build -t gen3registry02.azurecr.io/frontend:${{ github.sha }} ./frontend
-          docker push gen3registry02.azurecr.io/frontend:${{ github.sha }}
-
-      - name: ✏️ Update backend values.yaml image tag
-        run: |
-          sed -i "s/tag: .*/tag: ${{ github.sha }}/" helms/backend/values.yaml
-
-      - name: ✏️ Update frontend values.yaml image tag
-        run: |
-          sed -i "s/tag: .*/tag: ${{ github.sha }}/" helms/frontend/values.yaml
-
-      - name: ⬆️ Commit and push updated Helm values
-        run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add helms/backend/values.yaml helms/frontend/values.yaml
-
-          if ! git diff --cached --quiet; then
-            git commit -m "chore: update image tag to ${{ github.sha }}"
-            git push
-          else
-            echo "No changes to commit 👍"
-          fi
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.FRONTEND_CONTEXT }}
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}

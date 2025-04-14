@@ -8,12 +8,6 @@ group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 
-// JDK 11을 강제로 사용하기 위한 toolchain 설정
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(11)
-    }
-}
 
 repositories {
     mavenCentral()
