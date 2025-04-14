@@ -1,11 +1,13 @@
-name: CI + CD (Docker + ACR + Helm Update)
+name: CI + CD (Docker Build & ACR Push + Helm Tag Update)
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
       - 'backend/**'
       - 'frontend/**'
+      - 'helms/**'
       - '.github/workflows/ci-cd.yml'
 
 jobs:
@@ -13,17 +15,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📦 Checkout
+      - name: 📦 Checkout repository
         uses: actions/checkout@v3
 
-      - name: 🔐 ACR Login
+      - name: 🔧 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+
+      - name: 🔐 Login to Azure Container Registry
         uses: azure/docker-login@v1
         with:
           login-server: gen3registry02.azurecr.io
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
-      - name: 🐳 Build & Push Backend
+      - name: 🐳 Build & Push Backend image
         uses: docker/build-push-action@v5
         with:
           context: ./backend
@@ -32,7 +39,7 @@ jobs:
           cache-from: type=gha,scope=backend
           cache-to: type=gha,scope=backend,mode=max
 
-      - name: 🐳 Build & Push Frontend
+      - name: 🐳 Build & Push Frontend image
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
@@ -41,18 +48,18 @@ jobs:
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,scope=frontend,mode=max
 
-      - name: ✏️ Update backend values.yaml
+      - name: ✏️ Update backend values.yaml image tag
         run: |
           sed -i "s/tag: .*/tag: ${{ github.sha }}/" helms/backend/values.yaml
 
-      - name: ✏️ Update frontend values.yaml
+      - name: ✏️ Update frontend values.yaml image tag
         run: |
           sed -i "s/tag: .*/tag: ${{ github.sha }}/" helms/frontend/values.yaml
 
-      - name: ⬆️ Commit & Push tag update
+      - name: ⬆️ Commit and push updated Helm values
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add helms/**/values.yaml
+          git add helms/backend/values.yaml helms/frontend/values.yaml
           git commit -m "chore: update image tag to ${{ github.sha }}"
           git push
