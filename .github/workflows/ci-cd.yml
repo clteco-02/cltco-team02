@@ -25,9 +25,6 @@ jobs:
           builder-name: mybuilder   # 🔥 builder 명시
           install: true             # 🔥 기본 builder로 등록
 
-      - name: 🧪 Show Buildx builder info
-        run: docker buildx inspect mybuilder --bootstrap
-
       - name: 🔐 Login to Azure Container Registry
         uses: azure/docker-login@v1
         with:
