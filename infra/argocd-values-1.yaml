@@ -210,13 +210,14 @@ configs:
           id: github
           name: GitHub
           config:
+            loadAllGroups: true
             clientID: Ov23lifacrZWpM9e4Wvt
             clientSecret: 9360535d4b78602ff096de44bc4cd516f4a1e2d9 # Alternatively $<some_K8S_secret>:dex.github.clientSecret
             orgs:
-            - name: clteco-02
-            redirectURI: https://localhost:8080/api/dex/callback
+              - name: clteco-02
             teamNameField: slug
-
+            redirectURI: https://localhost:8080/api/dex/callback
+            scopes: ["read:org"]
     # OIDC configuration as an alternative to dex (optional).
     # oidc.config: |
     #   name: AzureAD
@@ -234,7 +235,6 @@ configs:
     #     - openid
     #     - profile
     #     - email
-
     # Extension Configuration
     ## Ref: https://argo-cd.readthedocs.io/en/latest/developer-guide/extensions/proxy-extensions/
     # extension.config: |
@@ -343,23 +343,32 @@ configs:
     # -- File containing user-defined policies and role definitions.
     # @default -- `''` (See [values.yaml])
     policy.csv: |
-      g, github:clteco-02/dev, role:poweruser
-      g, github:clteco-02/ops, role:poweruser
-      g, github:clteco-02/security, role:readonly
+      p, role:readonly, applications, get, *, allow
+      p, role:readonly, projects, get, *, allow
+      p, role:poweruser, applications, *, *, allow
+      p, role:poweruser, projects, create, *, allow
+      p, role:poweruser, projects, update, *, allow
+      p, role:poweruser, projects, get, *, allow
+      p, role:poweruser, repositories, *, *, allow
+      p, role:poweruser, clusters, *, *, allow
+      p, role:poweruser, accounts, get, *, allow
+      p, role:poweruser, clusters, *, *, allow
+      g, clteco-02:dev, role:poweruser
+      g, clteco-02:ops, role:poweruser
+      g, clteco-02:security, role:readonly
+    # roles: |
+    #   role:poweruser
+    #   policies:
+    #     - p, role:poweruser, applications, *, *, allow
+    #     - p, role:poweruser, projects, create, *, allow
+    #     - p, role:poweruser, repositories, *, *, allow
+    #     - p, role:poweruser, clusters, *, *, allow
+    #     - p, role:poweruser, accounts, get, *, allow
 
-    roles: |
-      role:poweruser
-      policies:
-        - p, role:poweruser, applications, *, *, allow
-        - p, role:poweruser, projects, *, *, allow
-        - p, role:poweruser, repositories, *, *, allow
-        - p, role:poweruser, clusters, *, *, allow
-        - p, role:poweruser, accounts, get, *, allow
-
-      role:readonly
-      policies:
-        - p, role:readonly, applications, get, *, allow
-        - p, role:readonly, projects, get, *, allow
+    #   role:readonly
+    #   policies:
+    #     - p, role:readonly, applications, get, *, allow
+    #     - p, role:readonly, projects, get, *, allow
     scopes: "[groups]"
 
     # -- Matcher function for Casbin, `glob` for glob matcher and `regex` for regex matcher.
