@@ -18,10 +18,12 @@ public class RedisConfig {
     public RedisConnectionFactory redisConnectionFactory(
             @Value("${spring.redis.host:localhost}") String host,
             @Value("${spring.redis.port:6379}") int port,
-            @Value("${spring.redis.password:}") String password) {
+            @Value("${spring.redis.password:}") String password,
+            @Value("${spring.redis.username:}") String username) {
         RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
         redisConfig.setHostName(host);
         redisConfig.setPort(port);
+        redisConfig.setUsername(username);
         if (password != null && !password.isEmpty()) {
             redisConfig.setPassword(password);
         }
