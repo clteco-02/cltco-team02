@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: echo-server-ingress
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    # nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    kubernetes.io/ingress.class: webapprouting.kubernetes.azure.com
+    cert-manager.io/cluster-issuer: letsencrypt-production
+spec:
+  ingressClassName: webapprouting.kubernetes.azure.com  # 수정된 ingressClassName
+  tls:
+    # This enables HTTPS via cert-manager using Let's Encrypt staging and serves on port 443
+    - hosts:
+        - 4.230.158.43.nip.io
+      secretName: echo-server-tls
+  rules:
+    - host: 4.230.158.43.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: echo-server
+                port:
+                  number: 80
