@@ -73,7 +73,7 @@
 import axios from 'axios';
 
 // nginx 프록시를 통해 요청하도록 수정
-const API_BASE_URL = 'https://team02-backend--lhshrc3.proudwave-56b3fa81.koreacentral.azurecontainerapps.io/api';
+const API_BASE_URL = 'https://team02-backend.proudwave-56b3fa81.koreacentral.azurecontainerapps.io/api';
 
 export default {
   name: 'App',
