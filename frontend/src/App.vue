@@ -111,6 +111,7 @@ export default {
       axios.interceptors.request.use(
         config => {
           const sessionId = localStorage.getItem('sessionId');
+          config.withCredentials = true;
           if (sessionId && !config.url.includes('/auth/login')) {
             config.headers['X-Session-ID'] = sessionId;
           }
@@ -144,7 +145,9 @@ export default {
     // 로그인 관련 메소드
     async login() {
       try {
-        const response = await axios.post(`${API_BASE_URL}/auth/login`, this.credentials);
+        const response = await axios.post(`${API_BASE_URL}/auth/login`, this.credentials, {
+          withCredentials: true
+        });
         if (response.data && response.data.sessionId) {
           localStorage.setItem('sessionId', response.data.sessionId);
           this.isLoggedIn = true;
@@ -168,7 +171,8 @@ export default {
         const sessionId = localStorage.getItem('sessionId');
         if (sessionId) {
           await axios.post(`${API_BASE_URL}/auth/logout`, {}, {
-            headers: { 'X-Session-ID': sessionId }
+            headers: { 'X-Session-ID': sessionId },
+            withCredentials: true
           });
         }
       } catch (error) {
@@ -187,7 +191,8 @@ export default {
       if (sessionId) {
         try {
           const response = await axios.get(`${API_BASE_URL}/auth/validate`, {
-            headers: { 'X-Session-ID': sessionId }
+            headers: { 'X-Session-ID': sessionId },
+            withCredentials: true
           });
           if (response.data && response.data.valid) {
             this.isLoggedIn = true;
@@ -220,6 +225,8 @@ export default {
       try {
         await axios.post(`${API_BASE_URL}/db/message`, {
           message: this.dbMessage
+        }, {
+          withCredentials: true
         });
         this.dbMessage = '';
         this.getFromDb();
@@ -232,7 +239,9 @@ export default {
     async getFromDb() {
       try {
         this.loading = true;
-        const response = await axios.get(`${API_BASE_URL}/db/messages?offset=${this.offset}&limit=${this.limit}`);
+        const response = await axios.get(`${API_BASE_URL}/db/messages?offset=${this.offset}&limit=${this.limit}`, {
+          withCredentials: true
+        });
         this.dbData = response.data;
         this.hasMore = response.data.length === this.limit;
       } catch (error) {
@@ -247,6 +256,8 @@ export default {
       try {
         await axios.post(`${API_BASE_URL}/db/message`, {
           message: randomMessage
+        }, {
+          withCredentials: true
         });
         this.getFromDb();
         this.getRedisLogs();
@@ -257,7 +268,9 @@ export default {
 
     async getRedisLogs() {
       try {
-        const response = await axios.get(`${API_BASE_URL}/logs/redis`);
+        const response = await axios.get(`${API_BASE_URL}/logs/redis`, {
+          withCredentials: true
+        });
         this.redisLogs = response.data;
       } catch (error) {
         console.error('Redis 로그 조회 실패:', error);
@@ -277,7 +290,9 @@ export default {
       
       try {
         this.loading = true;
-        const response = await axios.get(`${API_BASE_URL}/db/search?keyword=${encodeURIComponent(this.searchKeyword)}`);
+        const response = await axios.get(`${API_BASE_URL}/db/search?keyword=${encodeURIComponent(this.searchKeyword)}`, {
+          withCredentials: true
+        });
         this.dbData = response.data;
         this.isSearchActive = true;
       } catch (error) {
@@ -490,4 +505,4 @@ li {
   color: #dc3545;
   font-size: 16px;
 }
-</style> 
+</style>
