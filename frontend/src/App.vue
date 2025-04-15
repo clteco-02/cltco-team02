@@ -73,7 +73,7 @@
 import axios from 'axios';
 
 // nginx 프록시를 통해 요청하도록 수정
-const API_BASE_URL = '';
+const API_BASE_URL = '/api';
 
 export default {
   name: 'App',
